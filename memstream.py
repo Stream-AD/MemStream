@@ -8,7 +8,6 @@ from torch.utils.data import DataLoader
 from sklearn import metrics
 import scipy.spatial as sp
 from torch.autograd import Variable
-torch.manual_seed(0)
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', default='NSL')
@@ -18,7 +17,9 @@ parser.add_argument("--dev", help="device", default="cpu")
 parser.add_argument("--epochs", type=int, help="number of epochs for ae", default=5000)
 parser.add_argument("--lr", type=float, help="learning rate", default=1e-2)
 parser.add_argument("--memlen", type=int, help="size of memory", default=512)
+parser.add_argument("--seed", type=int, help="size of memory", default=0)
 args = parser.parse_args()  
+torch.manual_seed(args.seed)
 
 nfile = None
 lfile = None
@@ -124,7 +125,7 @@ numeric = torch.FloatTensor(np.loadtxt(nfile, delimiter = ','))
 labels = np.loadtxt(lfile, delimiter=',')
 if args.dataset == 'KDD':
     labels = 1 - labels
-torch.manual_seed(0)
+torch.manual_seed(args.seed)
 N = args.memlen
 params = {
           'beta': args.beta, 'code_len': args.dim, 'memory_len': N, 'batch_size':1, 'lr':args.lr
