@@ -25,19 +25,19 @@ torch.manual_seed(args.seed)
 nfile = None
 lfile = None
 if args.dataset == 'NSL':
-    nfile = '../MemStreamDataset/memnslnumeric.txt'
-    lfile = '../MemStreamDataset/memnsllabel.txt'
+    nfile = '../data/memnslnumeric.txt'
+    lfile = '../data/memnsllabel.txt'
 elif args.dataset == 'KDD': 
-    nfile = '../MemStreamDataset/memkddnumeric.txt'
-    lfile = '../MemStreamDataset/memkddlabel.txt'
+    nfile = '../data/memkddnumeric.txt'
+    lfile = '../data/memkddlabel.txt'
 elif args.dataset == 'UNSW': 
-    nfile = '../MemStreamDataset/memunswnewnumeric.txt'
-    lfile = '../MemStreamDataset/memunswlabel.txt'
+    nfile = '../data/memunswnumeric.txt'
+    lfile = '../data/memunswlabel.txt'
 elif args.dataset == 'DOS': 
-    nfile = '../MemStreamDataset/memdosnewnumeric.txt'
-    lfile = '../MemStreamDataset/memdoslabel.txt'
+    nfile = '../data/memdosnumeric.txt'
+    lfile = '../data/memdoslabel.txt'
 else:
-    df = scipy.io.loadmat('/home/siddharth/newdatasets/'+args.dataset)
+    df = scipy.io.loadmat('../data/'+args.dataset)
     numeric = torch.FloatTensor(df['X'])
     labels = (df['y']).astype(float).reshape(-1)
 
