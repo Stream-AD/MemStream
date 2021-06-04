@@ -1,22 +1,15 @@
-# import torch
-# import torch.nn as nn
-# import torch.nn.functional as F
 import numpy as np
 import time
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
-# from torch.utils.data import DataLoader
 from sklearn import metrics
 import scipy.spatial as sp
-# from torch.autograd import Variable
-# torch.manual_seed(0)
 np.seterr(divide="ignore", invalid="ignore")
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', default='NSL')
 parser.add_argument('--beta', type=float, default=1e-3)
 parser.add_argument('--dim', type=int, default=12)
-parser.add_argument("--dev", help="device", default="cpu")
 parser.add_argument("--epochs", type=int, help="number of epochs for ae", default=5000)
 parser.add_argument("--lr", type=float, help="learning rate", default=1e-2)
 parser.add_argument("--memlen", type=int, help="size of memory", default=512)
@@ -36,12 +29,6 @@ elif args.dataset == 'UNSW':
 elif args.dataset == 'DOS': 
     nfile = './data/dos.txt'
     lfile = './data/doslabel.txt'
-elif args.dataset == 'IDS': 
-    nfile = './data/iscx.csv'
-    lfile = './data/iscx_label.csv'
-
-# device = torch.device(args.dev)
-# device = 'cpu'
 
 class MemStream():
     def __init__(self, in_dim, params):
@@ -68,7 +55,6 @@ class MemStream():
         new = (data - self.mean) / self.std
         new[:, self.std == 0] = 0
         self.pca.fit(new)
-        print("PCA trained") 
 
 
     def update_memory(self, output_loss, encoder_output, data):
@@ -103,7 +89,6 @@ numeric = np.loadtxt(nfile, delimiter = ',')
 labels = np.loadtxt(lfile, delimiter=',')
 if args.dataset == 'KDD':
     labels = 1 - labels
-# torch.manual_seed(0)
 np.random.seed(0)
 N = args.memlen
 params = {
@@ -114,33 +99,14 @@ model = MemStream(numeric[0].shape[0],params)
 
 batch_size = params['batch_size']
 print(args.dataset, args.beta, args.dim, args.memlen)
-# data_loader = DataLoader(numeric, batch_size=batch_size)
 init_data = numeric[labels == 0][:N]
 model.mem_data = init_data
 model.train_autoencoder(init_data, epochs=args.epochs)
 model.initialize_memory(init_data[:N])
-# model.encoder.eval()
 err = []
-t = time.time()
 for i in range(numeric.shape[0]):
     output = model.forward(numeric[i:i+1])
     err.append(output)
-print("Time Taken", time.time() - t)        
 scores = np.array(err)
-print("Number of Updates: ", model.num_mem_update)
 auc = metrics.roc_auc_score(labels, scores)
-count = int(np.sum(labels))
-preds = np.zeros_like(labels)
-indices = np.argsort(scores, axis=0)[::-1]
-preds[indices[:count]] = 1
-f1 = metrics.f1_score(labels, preds)
-print("F1", f1, "AUC", auc)
-print("Confusion Matrix", metrics.confusion_matrix(labels, preds))
-something = (1 - labels)*scores
-something = something[np.nonzero(1-labels)]
-normal = np.sort(something)
-something = labels*scores
-something = something[np.nonzero(labels)]
-anomaly = np.sort(something)
-print("Normal stats", np.median(normal), np.max(normal), np.min(normal), np.mean(normal))
-print("Anomaly stats", np.median(anomaly), np.max(anomaly), np.min(anomaly), np.mean(anomaly))
+print("ROC-AUC", auc)
