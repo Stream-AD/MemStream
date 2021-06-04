@@ -10,8 +10,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', default='NSL')
 parser.add_argument('--beta', type=float, default=1e-3)
 parser.add_argument('--dim', type=int, default=12)
-parser.add_argument("--epochs", type=int, help="number of epochs for ae", default=5000)
-parser.add_argument("--lr", type=float, help="learning rate", default=1e-2)
 parser.add_argument("--memlen", type=int, help="size of memory", default=512)
 args = parser.parse_args()  
 
@@ -50,7 +48,7 @@ class MemStream():
         self.count = 0
 
         
-    def train_autoencoder(self, data, epochs):
+    def train_autoencoder(self, data):
         self.mean, self.std = self.mem_data.mean(0), self.mem_data.std(0)
         new = (data - self.mean) / self.std
         new[:, self.std == 0] = 0
@@ -101,7 +99,7 @@ batch_size = params['batch_size']
 print(args.dataset, args.beta, args.dim, args.memlen)
 init_data = numeric[labels == 0][:N]
 model.mem_data = init_data
-model.train_autoencoder(init_data, epochs=args.epochs)
+model.train_autoencoder(init_data)
 model.initialize_memory(init_data[:N])
 err = []
 for i in range(numeric.shape[0]):
