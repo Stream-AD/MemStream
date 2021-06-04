@@ -19,6 +19,7 @@ parser.add_argument("--epochs", type=int, help="number of epochs for ae", defaul
 parser.add_argument("--lr", type=float, help="learning rate", default=1e-2)
 parser.add_argument("--memlen", type=int, help="size of memory", default=2048)
 parser.add_argument("--seed", type=int, help="random seed", default=0)
+parser.add_argument("--gamma", type=float, help="knn coefficient", default=0)
 args = parser.parse_args()  
 
 torch.manual_seed(args.seed)
@@ -50,6 +51,7 @@ class MemStream(nn.Module):
         self.in_dim = in_dim
         self.out_dim = in_dim*2
         self.memory_len = params['memory_len']
+        self.gamma = params['gamma']
         self.max_thres = torch.tensor(params['beta']).to(device)
         self.memory = torch.randn(self.memory_len, self.out_dim).to(device)
         self.mem_data = torch.randn(self.memory_len, self.in_dim).to(device)
@@ -69,6 +71,8 @@ class MemStream(nn.Module):
         self.optimizer = torch.optim.Adam(self.parameters(), lr=params['lr'])
         self.loss_fn = nn.MSELoss()
         self.count = 0
+        self.K = 3
+        self.exp = torch.Tensor([self.gamma**i for i in range(self.K)]).to(device)
 
         
     def train_autoencoder(self, data, epochs):
@@ -106,7 +110,8 @@ class MemStream(nn.Module):
         new = (x - self.mean) / self.std
         new[:, self.std == 0] = 0
         encoder_output = self.encoder(new)
-        loss_values = torch.norm(self.memory - encoder_output, dim=1, p=1).min()
+#         loss_values = torch.norm(self.memory - encoder_output, dim=1, p=1).min()
+        loss_values = (torch.topk(torch.norm(self.memory - encoder_output, dim=1, p=1), k=self.K, largest=False)[0]*self.exp).sum()/self.exp.sum()
         self.update_memory(loss_values, encoder_output, x)
         return loss_values
     
@@ -119,13 +124,13 @@ if args.dataset == 'KDD':
 torch.manual_seed(args.seed)
 N = args.memlen
 params = {
-          'beta': args.beta, 'memory_len': N, 'batch_size':1, 'lr':args.lr
+          'beta': args.beta, 'memory_len': N, 'batch_size':1, 'lr':args.lr, 'gamma':args.gamma
          }
 
 model = MemStream(numeric[0].shape[0],params).to(device)
 
 batch_size = params['batch_size']
-print(args.dataset, args.beta, args.memlen, args.lr, args.epochs)
+print(args.dataset, args.beta, args.gamma, args.memlen, args.lr, args.epochs)
 data_loader = DataLoader(numeric, batch_size=batch_size)
 init_data = numeric[labels == 0][:N].to(device)
 model.mem_data = init_data
