@@ -9,18 +9,17 @@ from torch.utils.data import DataLoader
 from sklearn import metrics
 import scipy.spatial as sp
 from torch.autograd import Variable
-torch.manual_seed(0)
 import argparse
-print("INFORMATION BOTTLENECK")
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', default='NSL')
 parser.add_argument('--beta', type=float, default=1e-3)
 parser.add_argument('--dim', type=int, default=12)
 parser.add_argument("--dev", help="device", default="cpu")
-parser.add_argument("--epochs", type=int, help="number of epochs for ae", default=5000)
+parser.add_argument("--epochs", type=int, help="number of epochs for ib", default=5000)
 parser.add_argument("--lr", type=float, help="learning rate", default=1e-2)
 parser.add_argument("--memlen", type=int, help="size of memory", default=512)
 parser.add_argument("--ibbeta", type=float, help="beta value of IB", default=0.5)
+parser.add_argument("--seed", type=int, help="random seed", default=0)
 args = parser.parse_args()  
 
 nfile = None
@@ -37,9 +36,6 @@ elif args.dataset == 'UNSW':
 elif args.dataset == 'DOS': 
     nfile = './data/dos.txt'
     lfile = './data/doslabel.txt'
-elif args.dataset == 'IDS': 
-    nfile = './data/iscx.csv'
-    lfile = './data/iscx_label.csv'
 
 device = torch.device(args.dev)
 
@@ -140,7 +136,6 @@ class MemStream(nn.Module):
             loss = get_loss(train_IXT, train_ITY)
             loss.backward()
             self.optimizer.step()
-        print("IB Loss", loss.item()) 
 
 
     def update_memory(self, output_loss, encoder_output, data):
@@ -172,7 +167,7 @@ class MemStream(nn.Module):
         return loss_values
     
     
-torch.manual_seed(0)
+torch.manual_seed(args.seed)
 N = args.memlen
 params = {
           'beta': args.beta, 'code_len': args.dim, 'memory_len': N, 'batch_size':1, 'lr':args.lr
@@ -189,28 +184,10 @@ torch.set_grad_enabled(True)
 model.train_autoencoder(numeric[:N].to(device), epochs=args.epochs, labels=torch.Tensor(labels[:N].reshape(-1, 1)))
 torch.set_grad_enabled(False)
 model.initialize_memory(numeric[labels == 0][:N].to(device))
-# model.encoder.eval()
 err = []
-t = time.time()
 for data in data_loader:
     output = model(data.to(device))
     err.append(output)
-print("Time Taken", time.time() - t)        
 scores = np.array([i.cpu() for i in err])
-print("Number of Updates: ", model.num_mem_update)
 auc = metrics.roc_auc_score(labels, scores)
-count = int(np.sum(labels))
-preds = np.zeros_like(labels)
-indices = np.argsort(scores, axis=0)[::-1]
-preds[indices[:count]] = 1
-f1 = metrics.f1_score(labels, preds)
-print("F1", f1, "AUC", auc)
-print("Confusion Matrix", metrics.confusion_matrix(labels, preds))
-something = (1 - labels)*scores
-something = something[np.nonzero(1-labels)]
-normal = np.sort(something)
-something = labels*scores
-something = something[np.nonzero(labels)]
-anomaly = np.sort(something)
-print("Normal stats", np.median(normal), np.max(normal), np.min(normal), np.mean(normal))
-print("Anomaly stats", np.median(anomaly), np.max(anomaly), np.min(anomaly), np.mean(anomaly))
+print("ROC-AUC", auc)
