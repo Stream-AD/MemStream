@@ -20,22 +20,27 @@ parser.add_argument("--lr", type=float, help="learning rate", default=1e-2)
 parser.add_argument("--memlen", type=int, help="size of memory", default=512)
 parser.add_argument("--ibbeta", type=float, help="beta value of IB", default=0.5)
 parser.add_argument("--seed", type=int, help="random seed", default=0)
-args = parser.parse_args()  
+args = parser.parse_args()
 
 nfile = None
 lfile = None
 if args.dataset == 'NSL':
-    nfile = './data/nsl.txt'
-    lfile = './data/nsllabel.txt'
-elif args.dataset == 'KDD': 
-    nfile = './data/kdd.txt'
-    lfile = './data/kddlabel.txt'
-elif args.dataset == 'UNSW': 
-    nfile = './data/unsw.txt'
-    lfile = './data/unswlabel.txt'
-elif args.dataset == 'DOS': 
-    nfile = './data/dos.txt'
-    lfile = './data/doslabel.txt'
+    nfile = '../data/nsl.txt'
+    lfile = '../data/nsllabel.txt'
+elif args.dataset == 'KDD':
+    nfile = '../data/kdd.txt'
+    lfile = '../data/kddlabel.txt'
+elif args.dataset == 'UNSW':
+    nfile = '../data/unsw.txt'
+    lfile = '../data/unswlabel.txt'
+elif args.dataset == 'DOS':
+    nfile = '../data/dos.txt'
+    lfile = '../data/doslabel.txt'
+else:
+    df = scipy.io.loadmat('../data/'+args.dataset+".mat")
+    numeric = torch.FloatTensor(df['X'])
+    labels = (df['y']).astype(float).reshape(-1)
+
 
 device = torch.device(args.dev)
 
@@ -82,7 +87,7 @@ labels = np.loadtxt(lfile, delimiter=',')
 if args.dataset == 'KDD':
     labels = 1 - labels
 inputdim = numeric.shape[1]
-    
+
 class AutoEncoder(nn.Module):
     def __init__(self):
         super(AutoEncoder, self).__init__()
@@ -120,7 +125,7 @@ class MemStream(nn.Module):
         self.loss_fn = nn.MSELoss()
         self.count = 0
 
-        
+
     def train_autoencoder(self, data, epochs, labels):
         self.mean, self.std = self.mem_data.mean(0), self.mem_data.std(0)
         new = (data - self.mean) / self.std
@@ -143,13 +148,13 @@ class MemStream(nn.Module):
             least_used_pos = torch.argmin(self.mem_idx)
             self.memory[least_used_pos] = encoder_output
             self.mem_data[least_used_pos] = data
-            self.mean, self.std = self.mem_data.mean(0), self.mem_data.std(0)    
+            self.mean, self.std = self.mem_data.mean(0), self.mem_data.std(0)
             self.mem_idx[least_used_pos] = self.count
             self.count += 1
-            self.num_mem_update += 1  
+            self.num_mem_update += 1
             return 1
-        return 0    
-    
+        return 0
+
     def initialize_memory(self, x):
         mean, std = model.mem_data.mean(0), model.mem_data.std(0)
         new = (x - mean) / std
@@ -157,7 +162,7 @@ class MemStream(nn.Module):
         self.memory = self.ae.e1(new)
         self.memory.requires_grad = False
         self.mem_data = x
-    
+
     def forward(self, x):
         new = (x - self.mean) / self.std
         new[:, self.std == 0] = 0
@@ -165,8 +170,8 @@ class MemStream(nn.Module):
         loss_values = torch.norm(self.memory - encoder_output, dim=1, p=1).min()
         self.updates.append(self.update_memory(loss_values, encoder_output, x))
         return loss_values
-    
-    
+
+
 torch.manual_seed(args.seed)
 N = args.memlen
 params = {
