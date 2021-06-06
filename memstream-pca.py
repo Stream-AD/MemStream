@@ -11,22 +11,27 @@ parser.add_argument('--dataset', default='NSL')
 parser.add_argument('--beta', type=float, default=1e-3)
 parser.add_argument('--dim', type=int, default=12)
 parser.add_argument("--memlen", type=int, help="size of memory", default=512)
-args = parser.parse_args()  
+args = parser.parse_args()
 
 nfile = None
 lfile = None
 if args.dataset == 'NSL':
-    nfile = './data/nsl.txt'
-    lfile = './data/nsllabel.txt'
-elif args.dataset == 'KDD': 
-    nfile = './data/kdd.txt'
-    lfile = './data/kddlabel.txt'
-elif args.dataset == 'UNSW': 
-    nfile = './data/unsw.txt'
-    lfile = './data/unswlabel.txt'
-elif args.dataset == 'DOS': 
-    nfile = './data/dos.txt'
-    lfile = './data/doslabel.txt'
+    nfile = '../data/nsl.txt'
+    lfile = '../data/nsllabel.txt'
+elif args.dataset == 'KDD':
+    nfile = '../data/kdd.txt'
+    lfile = '../data/kddlabel.txt'
+elif args.dataset == 'UNSW':
+    nfile = '../data/unsw.txt'
+    lfile = '../data/unswlabel.txt'
+elif args.dataset == 'DOS':
+    nfile = '../data/dos.txt'
+    lfile = '../data/doslabel.txt'
+else:
+    df = scipy.io.loadmat('../data/'+args.dataset+".mat")
+    numeric = torch.FloatTensor(df['X'])
+    labels = (df['y']).astype(float).reshape(-1)
+
 
 class MemStream():
     def __init__(self, in_dim, params):
@@ -47,7 +52,7 @@ class MemStream():
         self.updates = []
         self.count = 0
 
-        
+
     def train_autoencoder(self, data):
         self.mean, self.std = self.mem_data.mean(0), self.mem_data.std(0)
         new = (data - self.mean) / self.std
@@ -60,20 +65,20 @@ class MemStream():
             least_used_pos = np.argmin(self.mem_idx)
             self.memory[least_used_pos] = encoder_output
             self.mem_data[least_used_pos] = data
-            self.mean, self.std = self.mem_data.mean(0), self.mem_data.std(0)    
+            self.mean, self.std = self.mem_data.mean(0), self.mem_data.std(0)
             self.mem_idx[least_used_pos] = self.count
             self.count += 1
-            self.num_mem_update += 1  
+            self.num_mem_update += 1
             return 1
-        return 0    
-    
+        return 0
+
     def initialize_memory(self, x):
         mean, std = model.mem_data.mean(0), model.mem_data.std(0)
         new = (x - mean) / std
         new[:, std == 0] = 0
         self.memory = self.pca.transform(new)
         self.mem_data = x
-    
+
     def forward(self, x):
         new = (x - self.mean) / self.std
         new[:, self.std == 0] = 0
@@ -81,8 +86,8 @@ class MemStream():
         loss_values = np.linalg.norm(self.memory - encoder_output, axis=1, ord=1).min()
         self.updates.append(self.update_memory(loss_values, encoder_output, x))
         return loss_values
-    
-    
+
+
 numeric = np.loadtxt(nfile, delimiter = ',')
 labels = np.loadtxt(lfile, delimiter=',')
 if args.dataset == 'KDD':
