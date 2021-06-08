@@ -1,12 +1,18 @@
 # MemStream
 
+<p>
+  <a href="https://arxiv.org/pdf/2106.03837.pdf"><img src="http://img.shields.io/badge/Paper-PDF-brightgreen.svg"></a>
+  <a href="https://github.com/Stream-AD/MemStream/blob/master/LICENSE">
+    <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg">
+  </a>
+</p>
+
 Implementation of
 
 - [MemStream: Memory-Based Anomaly Detection in Multi-Aspect Streams with Concept Drift
 ](https://arxiv.org/pdf/2106.03837.pdf). Siddharth Bhatia, Arjit Jain, Shivin Srivastava, Kenji Kawaguchi, Bryan Hooi
 
 MemStream augments a feature extractor like PCA, IB and AutoEncoder, with a Memory module to detects anomalies from a multi-aspect data stream. We output an anomaly score for each record.
-UNSW-NB 15 and CICIDS-DoS datasets are not uploaded on OpenReview due to space limitations. Please download complete code and dataset folder from the anonymous public link: https://www.dropbox.com/s/hzcv3uc69bxey1b/MemStream.zip
 
 ## Demo
 
