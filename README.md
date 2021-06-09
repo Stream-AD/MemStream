@@ -14,6 +14,9 @@ Implementation of
 
 MemStream augments a feature extractor like PCA, IB and AutoEncoder, with a Memory module to detects anomalies from a multi-aspect data stream. We output an anomaly score for each record.
 
+![](MemStream.png)
+After an initial training of the feature extractor on a small subset of normal data, MemStream processes records in two steps: (i) It outputs anomaly scores for each record by querying the memory for K-nearest neighbours to the record encoding and calculating a discounted distance and (ii) It updates the memory, in a FIFO manner, if the anomaly score is within an update threshold β.
+
 ## Demo
 
 1. KDDCUP99: Run `python3 memstream.py --dataset KDD --beta 1 --memlen 256`
