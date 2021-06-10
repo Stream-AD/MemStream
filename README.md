@@ -12,7 +12,7 @@ Implementation of
 - [MemStream: Memory-Based Anomaly Detection in Multi-Aspect Streams with Concept Drift
 ](https://arxiv.org/pdf/2106.03837.pdf). Siddharth Bhatia, Arjit Jain, Shivin Srivastava, Kenji Kawaguchi, Bryan Hooi
 
-MemStream augments a feature extractor like PCA, IB and AutoEncoder, with a Memory module to detects anomalies from a multi-aspect data stream. We output an anomaly score for each record.
+MemStream detects anomalies from a multi-aspect data stream. We output an anomaly score for each record. MemStream is a memory augmented feature extractor, allows for quick retraining, gives a theoretical bound on the memory size for effective drift handling, is robust to memory poisoning, and outperforms 11 state-of-the-art streaming anomaly detection baselines.
 
 ![](MemStream.png)
 After an initial training of the feature extractor on a small subset of normal data, MemStream processes records in two steps: (i) It outputs anomaly scores for each record by querying the memory for K-nearest neighbours to the record encoding and calculating a discounted distance and (ii) It updates the memory, in a FIFO manner, if the anomaly score is within an update threshold β.
