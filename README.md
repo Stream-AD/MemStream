@@ -17,9 +17,6 @@ MemStream detects anomalies from a multi-aspect data stream. We output an anomal
 ![](MemStream.png)
 After an initial training of the feature extractor on a small subset of normal data, MemStream processes records in two steps: (i) It outputs anomaly scores for each record by querying the memory for K-nearest neighbours to the record encoding and calculating a discounted distance and (ii) It updates the memory, in a FIFO manner, if the anomaly score is within an update threshold β.
 
-## Datasets
-
-Processed Datasets can be downloaded from [here](https://drive.google.com/file/d/1JNrhOr8U3Nqef1hBOqvHQPzBNWzDOFdl/view). Please unzip and place the files in the data folder of the repository.
 
 ## Demo
 
@@ -49,6 +46,8 @@ Processed Datasets can be downloaded from [here](https://drive.google.com/file/d
 MemStream expects the input multi-aspect record stream to be stored in a contains `,` separated file.
 
 ## Datasets
+Processed Datasets can be downloaded from [here](https://drive.google.com/file/d/1JNrhOr8U3Nqef1hBOqvHQPzBNWzDOFdl/view). Please unzip and place the files in the data folder of the repository.
+
 1. [KDDCUP99](http://kdd.ics.uci.edu/databases/kddcup99/kddcup99.html)
 2. [NSL-KDD](https://www.unb.ca/cic/datasets/nsl.html)
 3. [UNSW-NB 15](https://www.unsw.adfa.edu.au/unsw-canberra-cyber/cybersecurity/ADFA-NB15-Datasets/)
