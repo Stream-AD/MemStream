@@ -9,8 +9,8 @@
 
 Implementation of
 
-- [MemStream: Memory-Based Anomaly Detection in Streams with Concept Drift
-](https://arxiv.org/pdf/2106.03837.pdf). Siddharth Bhatia, Arjit Jain, Shivin Srivastava, Kenji Kawaguchi, Bryan Hooi
+- [MemStream: Memory-Based Streaming Anomaly Detection
+](https://arxiv.org/pdf/2106.03837.pdf). Siddharth Bhatia, Arjit Jain, Shivin Srivastava, Kenji Kawaguchi, Bryan Hooi. The Web Conference (formerly WWW), 2022.
 
 MemStream detects anomalies from a multi-aspect data stream. We output an anomaly score for each record. MemStream is a memory augmented feature extractor, allows for quick retraining, gives a theoretical bound on the memory size for effective drift handling, is robust to memory poisoning, and outperforms 11 state-of-the-art streaming anomaly detection baselines.
 
